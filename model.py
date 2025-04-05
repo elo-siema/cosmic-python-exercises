@@ -1,26 +1,31 @@
 from dataclasses import dataclass
 from datetime import date
+from typing import NewType
+
+Sku = NewType("Sku", str)
+Quantity = NewType("Quantity", int)
+Reference = NewType("Reference", str)
 
 class AllocationError(ValueError):
     pass
 
 @dataclass(frozen=True)
 class OrderLine:
-    sku: str
-    qty: int
+    sku: Sku
+    qty: Quantity
 
 @dataclass(frozen=True)
 class Order:
-    order_ref: str
+    order_ref: Reference
     lines: list[OrderLine]
 
 class Batch:
-    ref: str
-    sku: str
-    available_qty: int
+    ref: Reference
+    sku: Sku
+    available_qty: Quantity
     eta: date | None
 
-    def __init__(self, ref: str, sku: str, qty: int, eta: date | None):
+    def __init__(self, ref: Reference, sku: Sku, qty: Quantity, eta: date | None):
         self.ref = ref
         self.sku = sku
         self.available_qty = qty
