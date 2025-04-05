@@ -17,9 +17,7 @@ class SqlRepository(AbstractRepository):
         self.session = session
 
     def add(self, batch):
-        # self.session.execute('INSERT INTO ??
-        ...
+        self.session.add(batch)
 
     def get(self, reference) -> model.Batch:
-        # self.session.execute('SELECT ??
-        ...
+        return self.session.query(model.Batch).filter(model.Batch.reference == reference).one()
