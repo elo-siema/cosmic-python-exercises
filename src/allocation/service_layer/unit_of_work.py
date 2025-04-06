@@ -8,13 +8,13 @@ from sqlalchemy.orm.session import Session
 
 from allocation import config
 from allocation.adapters import repository
+from contextlib import contextmanager
 
 
 class AbstractUnitOfWork(abc.ABC):
     # should this class contain __enter__ and __exit__?
     # or should the context manager and the UoW be separate?
     # up to you!
-
     @abc.abstractmethod
     def commit(self):
         raise NotImplementedError
@@ -23,6 +23,9 @@ class AbstractUnitOfWork(abc.ABC):
     def rollback(self):
         raise NotImplementedError
 
+    def __exit__(self, exc_type, exc_value, traceback):
+        if exc_value is not None:
+            self.rollback()
 
 DEFAULT_SESSION_FACTORY = sessionmaker(
     bind=create_engine(
@@ -30,9 +33,22 @@ DEFAULT_SESSION_FACTORY = sessionmaker(
     )
 )
 
+class SqlAlchemyUnitOfWork(AbstractUnitOfWork):
+    def __init__(self):
+        self.session = DEFAULT_SESSION_FACTORY()
+        self.repository = repository.SqlAlchemyRepository(self.session)
 
-class SqlAlchemyUnitOfWork:
-    ...
+    def __enter__(self):
+        return self
+
+    def commit(self):
+        self.session.commit()
+
+    def rollback(self):
+        self.session.rollback()
+
+
+
 
 
 # One alternative would be to define a `start_uow` function,
